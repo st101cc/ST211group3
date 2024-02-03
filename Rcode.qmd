@@ -1,0 +1,27 @@
+---
+title: "ST211mini project"
+author: "Group3"
+output: html
+self-contained: true
+editor:
+    render-on-save: true
+    preview: true
+---
+
+## Set up
+```{r}
+# set up
+library(dplyr)       
+library(tidyr)      
+library(readr)      
+library(lubridate)
+library(arm)
+library(tidyselect)
+library(ggplot2)
+```
+
+```{r}
+# Data Loading
+data<-read.csv("data/RWNS_final.csv", header=TRUE,stringsAsFactors=TRUE)
+```
+
