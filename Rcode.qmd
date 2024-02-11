@@ -1,6 +1,6 @@
 ---
 title: "ST211mini project"
-author: "Group3"
+author: "Group4"
 output: html
 self-contained: true
 editor:
@@ -9,7 +9,7 @@ editor:
 ---
 
 ## Set up
-```{r}
+```{r message=FALSE, warning=FALSE}
 # set up
 library(dplyr)       
 library(tidyr)      
@@ -24,4 +24,78 @@ library(ggplot2)
 # Data Loading
 data<-read.csv("data/RWNS_final.csv", header=TRUE,stringsAsFactors=TRUE)
 ```
+
+## `fiveac` vs k4score
+```{r warning=FALSE, message=FALSE}
+fiveac_g<-ggplot(data=data, aes(x=fiveac,y=ks4score)) +
+  geom_boxplot() +
+  labs(title="Boxplot of 5 A*-C Subjects vs GCSE Scores",
+         x="5 A*-C Subjects",
+         y="GCSE Scores")
+fiveac_g
+```
+It's obvious that both median and IQR is higher for students who have 5 or more A*-C subjects. This is quite intuitive as students who have more GCSE subjects that are grade from A star to C tend to have higher GCSE scores. Thus, we will include this variable to our final model as well.
+
+## `fiveem` vs k4score
+The inclusion of this variable is quite questionable, because it's overlapped with the `fiveac` variable, while `fiveac` is a subset of `fiveem` which includes English and Maths. However, to make our final model more accurate, we created simple linear regressions for both variables and tested their R-squraed values to see which one is more significant.
+
+```{r warning=FALSE, message=FALSE}
+fiveac_lm <- lm(ks4score ~ fiveac, data = data)
+display(fiveac_lm)
+```
+```{r}
+fiveem_lm <- lm(ks4score ~ fiveem, data = data)
+display(fiveem_lm)
+```
+By displaying the results of both regression, the R-squared value of the `fiveac` variable is 0.57, while the R-squared value of the `fiveem` variable is 0.46. This indicates that the `fiveac` variable is slightly more significant than the `fiveem` variable. It's quite reasonable because it's easier to get a higher grade on basic subjects like English and Maths compared to other subjects. Thus, students who have more A*-C subjects excluding basic subjects tend to have higher GCSE scores. Therefore, we will include the `fiveac` variable to our final model, and exclude the `fiveem` variable.
+
+
+## `IDACI_n` vs k4score
+
+By viewing the dataset, we can see that there are one columns that contain numerical variables which is **"IDACI_n"**. Here, we chose to first use `scatter plots` to see the relationship of this variable with the target variable. This is because with numerical data, the scatter plot can show `a best fitting line` which indicates the trending of the data.
+
+```{r warning=FALSE, message=FALSE}
+IDACI_g<-ggplot(data, aes(x = IDACI_n, y = ks4score)) + 
+  geom_point(alpha=0.2, size=3, color="lightblue", stroke=1) + 
+  geom_smooth(method = "lm",  
+              se = FALSE) + 
+  theme_minimal() + 
+  labs(title = "Scatter Plot of Deprivation vs GCSE Scores with Fitted Line",
+       x = "Index of Deprivation",
+       y = "GCSE Scores")
+
+IDACI_g
+```
+From the plot, we can see that there is a slightly downward trend in the fitted line, which indicates that the higher the deprivation index, the lower the GCSE scores. It's quite intuitive that students with more deprived background tend to receive less-qualified education, and thus resulting to lower GCSE scores.
+
+However, it's not reasonable to conclude that the deprivation index is a significant factor that affects the GCSE scores from the plot. We need to further investigate the relationship between the deprivation index and the GCSE scores by using a **simple linear regression model**.
+
+```{r}
+# Simple linear regression model
+IDACI_lm <- lm(ks4score ~ IDACI_n, data = data)
+summary(IDACI_lm)
+```
+From the summary of the simple linear regression model, we can see that the p-value of the coefficient of the deprivation index is less than 0.05, which indicates that this negative relationship is statistically significant. However, at the same time, the R-squared value is only 0.05, showing that the deprivation index only explains 5% of the variation in GCSE scores. Therefore, we can conclude that the deprivation index is a significant factor that affects the GCSE scores, but it's not the only factor.
+
+## `house` vs k4score
+```{r warning=FALSE, message=FALSE}
+house_g<-ggplot(data=data, aes(x=house,y=ks4score)) +
+  geom_boxplot() +
+  labs(title="Boxplot of Housing Status vs GCSE Scores",
+         x="Housing Status",
+         y="GCSE Scores")
+house_g
+```
+From the boxplot, we can see that the difference amongst the three housing statuses is not that significant except for a slightly higher median and range for students with owned houses. Besides, the `other/DK/Ref` value is quite tricky to interpret.
+
+What's more, we believe that the housing status has a relaship with deprivation index. Thus, we created another boxplot for housing status versus deprivation index.
+```{r warning=FALSE, message=FALSE}
+house_IDACI_g<-ggplot(data=data, aes(x=house,y=IDACI_n)) +
+  geom_boxplot() +
+  labs(title="Boxplot of Housing Status vs Deprivation Index",
+         x="Housing Status",
+         y="Deprivation Index")
+house_IDACI_g
+```
+Unsurprisingly, the boxplot shows that students who live in rented houses tend to have higher deprivation index, which means that they are more likely to be from a deprived background. To some extent, the housing status information is overlapped with deprivation index, and the given the high significance of the index, we will exclude `house` variable from our final model.
 
