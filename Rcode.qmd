@@ -33,7 +33,7 @@ summary(data)
 ```
 ## Explore the data with plots
 ```{r}
-<<<<<<< HEAD
+
 ## gender: no clear relationship between gender and ks4score
 ggplot(data, aes(x=gender,y=ks4score, color=gender)) + geom_boxplot()
 
@@ -60,7 +60,7 @@ tidydata_k3 <- data_k3 %>%
   pivot_longer(cols = -"ks4score", names_to="k3", values_to="level")
 tidydata_k3
 ggplot(tidydata_k3, aes(x=k3,y=ks4score, color=k3)) + geom_boxplot()
-=======
+
 # no clear relationship between gender and ks4score
 ggplot(data, aes(x=gender,y=ks4score, color=gender)) + geom_boxplot() + labs(title = 'Boxplot between Gender and Ks4score')
 
@@ -74,7 +74,6 @@ ggplot(data, aes(x=attitude,y=ks4score, color=attitude)) + geom_boxplot() + labs
 ggplot(data, aes(x=k3en,y=ks4score, color=k3en)) + geom_boxplot()+ labs(title = 'Boxplot between K3en and Ks4score')
 ggplot(data, aes(x=k3ma,y=ks4score, color=k3en)) + geom_boxplot()+ labs(title = 'Boxplot between K3ma and Ks4score')
 ggplot(data, aes(x=k3sc,y=ks4score, color=k3en)) + geom_boxplot()+ labs(title = 'Boxplot between K3sc and Ks4score')
->>>>>>> c3143f17da1cfe7eb0e7120765a05e25d0a151cb
 
 ```
 
