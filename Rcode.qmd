@@ -25,6 +25,12 @@ library(ggplot2)
 data<-read.csv("data/RWNS_final.csv", header=TRUE,stringsAsFactors=TRUE)
 ```
 
+# Have a look at the data
+```{r}
+head(data)
+summary(data)
+```
+
 ## `fiveac` vs k4score
 ```{r warning=FALSE, message=FALSE}
 fiveac_g<-ggplot(data=data, aes(x=fiveac,y=ks4score)) +
@@ -98,4 +104,50 @@ house_IDACI_g<-ggplot(data=data, aes(x=house,y=IDACI_n)) +
 house_IDACI_g
 ```
 Unsurprisingly, the boxplot shows that students who live in rented houses tend to have higher deprivation index, which means that they are more likely to be from a deprived background. To some extent, the housing status information is overlapped with deprivation index, and the given the high significance of the index, we will exclude `house` variable from our final model.
+
+## `gender` vs k4score
+```{r}
+## gender: no clear relationship between gender and ks4score
+ggplot(data, aes(x=gender,y=ks4score, color=gender)) + geom_boxplot() + labs(title = 'Boxplot between Gender and Ks4score')
+```
+From the boxplot, we can see that there is no clear relationship beteween gender and ks4score
+
+## `singlepar` vs k4score
+```{r}
+ggplot(data, aes(x=singlepar,y=ks4score, color=singlepar)) + geom_boxplot() + labs(title = 'Boxplot between Students with or without Single Parent and Ks4score')
+```
+Students without single parent have a higher overall ks4score than students with single parent. 
+
+
+## `attitude` vs k4score
+```{r}
+ggplot(data, aes(x=reorder(attitude, ks4score, median),y=ks4score, color=attitude)) + geom_boxplot() + labs(title = 'Boxplot between Attitude and Ks4score')
+```
+Students with very_high attitude tend to have higher median ks4score compared to students with very_low attitude.  
+
+## `FSMband` vs k4score
+```{r}
+ggplot(data, aes(x=FSMband,y=ks4score, color=FSMband)) + geom_boxplot()
+```
+Different percent of students in the school entitled to FSM have varying ks4score. 
+
+## `hiquam` vs k4score
+```{r}
+ggplot(data, aes(x=reorder(hiquamum, ks4score, median),y=ks4score, color=hiquamum)) 
++ geom_boxplot() 
++ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+Students with different level of mothers highest educational qualification have different ks4score, where degree_or_equivalent has the highest median ks4score and no_qualification has the lowest ks4score. 
+
+## `k3` vs k4score
+```{r}
+# select subset of data for k3 variable
+data_k3 <- data[c("ks4score","k3en", "k3ma", "k3sc")]
+# tidy up the data for ggplot
+tidydata_k3 <- data_k3 %>%
+  pivot_longer(cols = -"ks4score", names_to="k3", values_to="level")
+tidydata_k3
+ggplot(tidydata_k3, aes(x=k3,y=ks4score, color=k3)) + geom_boxplot()
+```
+The boxplot of k3en, k3ma, and k3ec shows that there is no clear relationship between ks3 subject scores and ks4scores. 
 
