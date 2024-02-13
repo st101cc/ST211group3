@@ -151,3 +151,12 @@ ggplot(tidydata_k3, aes(x=k3,y=ks4score, color=k3)) + geom_boxplot()
 ```
 The boxplot of k3en, k3ma, and k3ec shows that there is no clear relationship between ks3 subject scores and ks4scores. 
 
+summary(data)
+
+## `excl ude` vs k4score
+```{r}
+ggplot(data, aes(x=exclude,y=ks4score, color=exclude)) + geom_boxplot() + labs(title = 'Boxplot between exclude and Ks4score')
+```
+Students with one ore more exclusions from school age 11-14 has a significantly lower ks4score compared to students without ezclusions. 
+
+
