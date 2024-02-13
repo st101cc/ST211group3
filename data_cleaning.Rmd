@@ -1,0 +1,118 @@
+---
+title: "missing_value"
+output: html_document
+date: "2024-02-11"
+---
+
+Import library
+```{r}
+rm(list=ls())
+library(dplyr)       
+library(tidyr)      
+library(readr)      
+library(lubridate)
+library(arm)
+library(tidyselect)
+library(ggplot2)
+```
+
+Load the data
+```{r}
+rw.data<-read.csv("data/RWNS_final.csv", header=TRUE,stringsAsFactors=TRUE)
+summary(rw.data)
+```
+
+#Continuous predictors with missing values
+
+IDACI_n is the only continuous predictor with missing values
+
+```{r}
+#In terms of continuous data, we remove the entire row if there is a missing value
+new.rw.data <- subset(rw.data, !is.na(IDACI_n))
+```
+
+
+#Categorical predictors with missing values
+
+Firstly I calculate the percentage of missing data among the categorical predictors(x/13448)
+
+hiquamum <- 6.80% of the data ``
+
+homework <- 7.06% ``
+
+attitude <- 7.42% ```
+
+truancy <- 6.23% ``
+
+absent <- 11.4% keep the missing value since the number of missing value here is larger than the number of value 'yes'
+
+exclude <- keep the missing value since the number of missing value here is larger than the number of value 'yes'
+
+##Method1. Remove the missing value
+
+When the percentage of missing value is small(<2.00%), we remove the missing value
+```{r}
+new.rw.data <- subset(new.rw.data, (SECshort != "missing" & #0.18% of the data
+                                    tuition != "missing" &  #1.60% of the data
+                                    fsm !="missing" &       #0.13% of the data
+                                    sen != "missing" &      #0.13% of the data
+                                    computer != "missing" & #1.60% of the data
+                                    parasp != "missing" &   #1.60% of the data
+                                    singlepar != "missing"& #0.82% of the data
+                                    FSMband != "missing"    #0.13% of the data
+                                    ))
+```
+
+We would add these values back if the predictor is significant in the model
+
+##Method2 Transform the missing value into a level of the categorical predictor
+
+When the amount of missing data for a categorical value is large, we transform the NAs into missing and treat them as a level of the categorical predictor for further analysis
+
+
+We have explored that the performance of the model shows similar patterns no matter using k3ma, k3sc or k3en. We would use k3ma for the following analysis.
+
+```{r}
+new.rw.data$exclude <- relevel(new.rw.data$exclude, ref = "No")
+ks4score.lm <- lm(ks4score ~ k3ma+exclude, data = new.rw.data)
+display(ks4score.lm)
+```
+In the fixed level of k3ma score, missing value gives a slightly lower ks4score than those who have not been excluded from school.
+
+Students who have been excluded from school's ks4score is much lower than those who have not been excluded from school and the missing value.
+
+
+```{r}
+ks4score.lm <- lm(ks4score ~ k3ma+hiquamum, data = new.rw.data)
+display(ks4score.lm)
+```
+Missing value in hiquamum is estimated to have higher ks4score than those with other qualificaitons.
+
+
+```{r}
+ks4score.lm <- lm(ks4score ~ k3ma+homework, data = new.rw.data)
+display(ks4score.lm)
+```
+For a fixed value of k3ma a school with missing value in homework has a lower ks4score than those with or without homework
+
+
+```{r}
+new.rw.data$absent <- relevel(new.rw.data$absent, ref = "No")
+ks4score.lm <- lm(ks4score ~ k3ma+absent, data = new.rw.data)
+display(ks4score.lm)
+```
+For a fixed value of k3ma, students with missing value in absent have a higher ks4score than those who have and have not been absent from school.
+
+
+```{r}
+new.rw.data$truancy <- relevel(new.rw.data$truancy, ref = "No")
+ks4score.lm <- lm(ks4score ~ k3ma+truancy, data = new.rw.data)
+display(ks4score.lm)
+```
+For a fixed value of k3ma, students with missing value in truancy have a higher ks4score than those who have been truant from school but lower than those who have not been truant from school.
+
+```{r}
+ks4score.lm <- lm(ks4score ~ k3ma+attitude, data = new.rw.data)
+display(ks4score.lm)
+```
+For a fixed value of k3ma, students with missing value in attitude have a lower ks4score than those with very_high attitude but higher than those with high attitude.
