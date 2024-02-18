@@ -6,16 +6,17 @@ our work log can be seen: [google doc](https://docs.google.com/document/d/1GgF5P
 
 ### Initial Allocation - 2.3
 ##### step1 - Preliminary Exploratory Analysis
-  1. categorical variables: boxplots + what to remove *2
-  2. numerical variables: scatter plots + regressions + what to remove *1
-  3. processing missing values *1
+  1. categorical variables: boxplots + what to remove - Cherrie
+  2. numerical variables: scatter plots + regressions + what to remove - Scarlett
+  3. processing missing values *1 - Judy
   - ddl - 2.12
+
+### Second meeting - 2.18
 ##### step2 - Modelling & Report
-  - mainly Jaden and Cherrie
-  - ddl - before reading week
-##### step3 - Final Report 
-  - mainly Scarlett and Judy
-  - ddl - 2.22
+  - Cherrie: model building
+  - Jaden: left variable analysis
+  - Scarlett & Judy: results analysis and comments on data
+  - ddl - 2.20
 
 
 ## Project Structure:
