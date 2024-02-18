@@ -9,6 +9,7 @@ editor:
 ---
 
 ## Set up
+
 ```{r message=FALSE, warning=FALSE}
 # set up
 library(dplyr)       
@@ -18,6 +19,8 @@ library(lubridate)
 library(arm)
 library(tidyselect)
 library(ggplot2)
+library(car)
+library(gridExtra)
 ```
 
 ```{r}
@@ -26,35 +29,31 @@ data<-read.csv("data/RWNS_final.csv", header=TRUE,stringsAsFactors=TRUE)
 ```
 
 # Have a look at the data
+
 ```{r}
 head(data)
 summary(data)
 ```
 
-## `fiveac` vs k4score
+## `fiveac` & `fiveem` vs k4score
+
 ```{r warning=FALSE, message=FALSE}
 fiveac_g<-ggplot(data=data, aes(x=fiveac,y=ks4score)) +
   geom_boxplot() +
-  labs(title="Boxplot of 5 A*-C Subjects vs GCSE Scores",
+  labs(title="Boxplot without Math & English",
          x="5 A*-C Subjects",
-         y="GCSE Scores")
-fiveac_g
-```
-It's obvious that both median and IQR is higher for students who have 5 or more A*-C subjects. This is quite intuitive as students who have more GCSE subjects that are grade from A star to C tend to have higher GCSE scores. Thus, we will include this variable to our final model as well.
+         y="Ks4score")
 
-## `fiveem` vs k4score
-The inclusion of this variable is quite questionable, because it's overlapped with the `fiveac` variable, while `fiveac` is a subset of `fiveem` which includes English and Maths. However, to make our final model more accurate, we created simple linear regressions for both variables and tested their R-squraed values to see which one is more significant.
+fiveem_g<-ggplot(data=data, aes(x=fiveem,y=ks4score)) +
+  geom_boxplot() +
+  labs(title="Boxplot with Math & English",
+         x="5 A*-C Subjects (inc. Math&Eng)",
+         y="Ks4score")
 
-```{r warning=FALSE, message=FALSE}
-fiveac_lm <- lm(ks4score ~ fiveac, data = data)
-display(fiveac_lm)
+grid.arrange(fiveac_g, fiveem_g, nrow=1)
 ```
-```{r}
-fiveem_lm <- lm(ks4score ~ fiveem, data = data)
-display(fiveem_lm)
-```
-By displaying the results of both regression, the R-squared value of the `fiveac` variable is 0.57, while the R-squared value of the `fiveem` variable is 0.46. This indicates that the `fiveac` variable is slightly more significant than the `fiveem` variable. It's quite reasonable because it's easier to get a higher grade on basic subjects like English and Maths compared to other subjects. Thus, students who have more A*-C subjects excluding basic subjects tend to have higher GCSE scores. Therefore, we will include the `fiveac` variable to our final model, and exclude the `fiveem` variable.
 
+It's obvious that both median and IQR is higher for students who have 5 or more A\*-C subjects. This is quite intuitive as students who have more GCSE subjects that are grade from A star to C tend to have higher GCSE scores. However, the two plots with similar patterns inside seem to have no significant difference with each other. For the ease of model building, we decide to only include one variable -`fiveac`.
 
 ## `IDACI_n` vs k4score
 
@@ -72,6 +71,7 @@ IDACI_g<-ggplot(data, aes(x = IDACI_n, y = ks4score)) +
 
 IDACI_g
 ```
+
 From the plot, we can see that there is a slightly downward trend in the fitted line, which indicates that the higher the deprivation index, the lower the GCSE scores. It's quite intuitive that students with more deprived background tend to receive less-qualified education, and thus resulting to lower GCSE scores.
 
 However, it's not reasonable to conclude that the deprivation index is a significant factor that affects the GCSE scores from the plot. We need to further investigate the relationship between the deprivation index and the GCSE scores by using a **simple linear regression model**.
@@ -79,11 +79,25 @@ However, it's not reasonable to conclude that the deprivation index is a signifi
 ```{r}
 # Simple linear regression model
 IDACI_lm <- lm(ks4score ~ IDACI_n, data = data)
-summary(IDACI_lm)
+display(IDACI_lm)
 ```
-From the summary of the simple linear regression model, we can see that the p-value of the coefficient of the deprivation index is less than 0.05, which indicates that this negative relationship is statistically significant. However, at the same time, the R-squared value is only 0.05, showing that the deprivation index only explains 5% of the variation in GCSE scores. Therefore, we can conclude that the deprivation index is a significant factor that affects the GCSE scores, but it's not the only factor.
+
+From the summary of the simple linear regression model, we can see that the negative relationship is statistically significant at 5% level. Therefore, we can conclude that the deprivation index is a significant factor that affects the GCSE scores, but it's not the only factor.
+
+## Multicollinearity Check
+
+There are some columns that we think may have correlations in between: `house`, `fsm`, `computer`, `tuition` and `IDACI_n`. In our common sense, we believe that students with high deprivation index are more likely to have rented houses, free school meals, no computers and low tuition fees. To do so, we began with testing the Variance Inflation Factors between these variables.
+
+```{r}
+ks4score.lm.1<-lm(ks4score~IDACI_n+fsm+house+computer+tuition,
+               data=data)
+car::vif(ks4score.lm.1)
+```
+
+Unsurprisingly, `computer` and `tuition` are highly correlated with each other with high VIF values of over 10. Therefore, we decide to keep `tuition` only and exclude `computer` variable.
 
 ## `house` vs k4score
+
 ```{r warning=FALSE, message=FALSE}
 house_g<-ggplot(data=data, aes(x=house,y=ks4score)) +
   geom_boxplot() +
@@ -92,37 +106,66 @@ house_g<-ggplot(data=data, aes(x=house,y=ks4score)) +
          y="GCSE Scores")
 house_g
 ```
-From the boxplot, we can see that the difference amongst the three housing statuses is not that significant except for a slightly higher median and range for students with owned houses. Besides, the `other/DK/Ref` value is quite tricky to interpret.
 
-What's more, we believe that the housing status has a relaship with deprivation index. Thus, we created another boxplot for housing status versus deprivation index.
+From the boxplot, we can see that students with owned houses tend to have a higher GCSE score. What's more, the median of the column `other/DK/Ref` is lower than `owned` but higher than `rented`, showing a significance to the target variable. Therefore, we will keep the missing value for `house`.
+
+## `fsm` vs k4score
+
 ```{r warning=FALSE, message=FALSE}
-house_IDACI_g<-ggplot(data=data, aes(x=house,y=IDACI_n)) +
+fsm_g<-ggplot(data=data, aes(x=fsm,y=ks4score)) +
   geom_boxplot() +
-  labs(title="Boxplot of Housing Status vs Deprivation Index",
-         x="Housing Status",
-         y="Deprivation Index")
-house_IDACI_g
+  labs(title="Boxplot of Free School Meal vs GCSE Scores",
+         x="Free School Meal",
+         y="GCSE Scores")
+fsm_g
 ```
-Unsurprisingly, the boxplot shows that students who live in rented houses tend to have higher deprivation index, which means that they are more likely to be from a deprived background. To some extent, the housing status information is overlapped with deprivation index, and the given the high significance of the index, we will exclude `house` variable from our final model.
+
+It has a relationship with GCSE scores.
+
+## `tuition` vs ks4score
+
+```{r warning=FALSE, message=FALSE}
+tuition_g<-ggplot(data=data, aes(x=tuition,y=ks4score)) +
+  geom_boxplot() +
+  labs(title="Boxplot of Tuition vs GCSE Scores",
+         x="Tuition Paid or not",
+         y="GCSE Scores")
+tuition_g
+```
+
+`tuition` value also has a contribution to the change in GSCE score. It means that if parents pay for private classes in a subject also taught at school in the last 12 months, the student will have a better grade.
 
 ## `gender` vs k4score
+
 ```{r}
 ## gender: no clear relationship between gender and ks4score
 ggplot(data, aes(x=gender,y=ks4score, color=gender)) + geom_boxplot() + labs(title = 'Boxplot between Gender and Ks4score')
 ```
+<<<<<<< Updated upstream
 From the boxplot, we can see that there is no clear relationship beteween gender and ks4score, so we will remove the gender variable from our predicition model. 
+=======
+
+From the boxplot, we can see that there is no clear relationship beteween gender and ks4score.
+>>>>>>> Stashed changes
 
 ## `singlepar` vs k4score
+
 ```{r}
 ggplot(data, aes(x=singlepar,y=ks4score, color=singlepar)) + geom_boxplot() + labs(title = 'Boxplot between Students with or without Single Parent and Ks4score')
 ```
-Students without single parent have a higher overall ks4score than students with single parent. 
 
+<<<<<<< Updated upstream
+=======
+Students without single parent have a higher overall ks4score than students with single parent.
+
+>>>>>>> Stashed changes
 ## `attitude` vs k4score
+
 ```{r}
 ggplot(data, aes(x=reorder(attitude, ks4score, median),y=ks4score, color=attitude)) + geom_boxplot() + labs(title = 'Boxplot between Attitude and Ks4score')
 ```
-Students with very_high attitude tend to have higher median ks4score compared to students with very_low attitude.  
+
+Students with very_high attitude tend to have higher median ks4score compared to students with very_low attitude.
 
 ```{r}
 # Simple linear regression model for attitude
@@ -132,18 +175,27 @@ summary(attitude_lm)
 The regression model for attitude suggests that 5% of the variability in GCSE score can be explained by students' attitude. Although the attitude factor is statistically significantly, there are many other variables that are not accounted for that influence academic performance. 
 
 ## `FSMband` vs k4score
+
 ```{r}
 ggplot(data, aes(x=FSMband,y=ks4score, color=FSMband)) + geom_boxplot()
 ```
-Different percent of students in the school entitled to FSM have varying ks4score. 
+
+Different percent of students in the school entitled to FSM have varying ks4score.
 
 ## `hiquam` vs k4score
+
 ```{r}
 ggplot(data, aes(x=reorder(hiquamum, ks4score, median),y=ks4score, color=hiquamum)) + geom_boxplot() + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
+<<<<<<< Updated upstream
 Students with different level of mothers highest educational qualification have different ks4score, where degree_or_equivalent have the highest median ks4score and no_qualification has the lowest ks4score. 
+=======
+
+Students with different level of mothers highest educational qualification have different ks4score, where degree_or_equivalent has the highest median ks4score and no_qualification has the lowest ks4score.
+>>>>>>> Stashed changes
 
 ## `k3` vs k4score
+
 ```{r}
 # select subset of data for k3 variable
 data_k3 <- data[c("ks4score","k3en", "k3ma", "k3sc")]
@@ -153,8 +205,16 @@ tidydata_k3 <- data_k3 %>%
 tidydata_k3
 ggplot(tidydata_k3, aes(x=k3,y=ks4score, color=k3)) + geom_boxplot()
 ```
+<<<<<<< Updated upstream
 The boxplot of k3en, k3ma, and k3ec shows that there is no clear relationship between ks3 subject scores and ks4scores. Since the three variables are highly correlated with each other, they can be combined together when running the regression model. 
 
+=======
+
+The boxplot of k3en, k3ma, and k3ec shows that there is no clear relationship between ks3 subject scores and ks4scores.
+
+## `exclude` and `truancy` vs k4score
+
+>>>>>>> Stashed changes
 ```{r}
 # Simple linear regression model for k3
 k3_lm <- lm(ks4score ~ k3en+k3ma+k3sc, data = data)
@@ -166,7 +226,8 @@ By running the regression model for k3 and ks4score, we can see that k3 and ks4s
 ```{r}
 ggplot(data, aes(x=exclude,y=ks4score, color=exclude)) + geom_boxplot() + labs(title = 'Boxplot between exclude and Ks4score')
 ```
-Students with one ore more exclusions from school age 11-14 has a significantly lower ks4score compared to students without exclusions. 
+
+Students with one ore more exclusions from school age 11-14 has a significantly lower ks4score compared to students without exclusions.
 
 ## `truancy` vs k4score
 ```{r}
@@ -190,15 +251,19 @@ summary(absent_lm)
 The linear model shows that all predictors other than absentYes and excludeNo are statistically significant. However, these behavioral factors (absent, exclude, truancy) explain only 12% variability of the GCSE score. 
 
 ## `SECshort` vs k4score
+
 ```{r}
 ggplot(data, aes(x=reorder(SECshort, ks4score, median),y=ks4score, color=SECshort)) + geom_boxplot() + labs(title = 'Boxplot between SECshort and Ks4score') + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
-The boxplot for SECshort shows that the median ks4score for managerial is the highest, followed by intermediate, missing, and routine, semi-routine and unemployed. 
+
+The boxplot for SECshort shows that the median ks4score for managerial is the highest, followed by intermediate, missing, and routine, semi-routine and unemployed.
 
 ## `parasp` and `pupasp` vs k4score
+
 ```{r}
 ggplot(data, aes(x=parasp,y=ks4score, fill=pupasp)) + geom_boxplot() + labs(title = 'Boxplot between parasp, pupasp, and Ks4score')
 ```
+<<<<<<< Updated upstream
 The boxplot shows that students who want to continue in FTE after age 16 has a significantly higher ks4score in all three cases (no, yes, missing) for whether parent wishes YP to continue in FTE post 16.
 
 ```{r}
@@ -207,3 +272,7 @@ pasp_lm <- lm(ks4score ~ parasp*pupasp, data = data)
 summary(pasp_lm)
 ```
 From the model above, we can see that pupaspYes shows a positive relationship with GCSE score, and the model explains around 12 percent of the variation in GCSE score. 
+=======
+
+The boxplot shows that students who want to continue in FTE after age 16 has a significantly higher ks4score in all three cases (no, yes, missing) of whether parent wishes YP to continue in FTE post 16.
+>>>>>>> Stashed changes
