@@ -167,3 +167,15 @@ ggplot(data, aes(x=parasp,y=ks4score, fill=pupasp)) + geom_boxplot() + labs(titl
 ```
 The boxplot shows that students who want to continue in FTE after age 16 has a significantly higher ks4score in all three cases (no, yes, missing) of whether parent wishes YP to continue in FTE post 16.
 
+
+## `homework vs k4score
+```{r}
+ggplot(data, aes(x=homework,y=ks4score)) + geom_boxplot() + labs(title = 'Boxplot between Homework Ks4score')
+```
+Students spend more time on homework have a higher overall ks4score
+
+## `sen vs k4score
+```{r}
+ggplot(data, aes(x=sen,y=ks4score)) + geom_boxplot() + labs(title = 'Boxplot between sen and Ks4score')
+```
+Students without SEN have a significantly higher ks4score compared to students with SEN
