@@ -122,6 +122,14 @@ fsm_g
 
 It has a relationship with GCSE scores.
 
+### `sen` vs k4score
+```{r}
+ks4score.lm.2<-lm(ks4score~fsm+sen,
+               data=data)
+coef(ks4score.lm.2)
+```
+The coefficients output shows `NA` for `senYes`, which indicates that there is perfect multicollinearity or that the variable is a linear combination of other variables in the regression. Therefore, we decide to exclude `sen` from our model.
+
 ## `tuition` vs ks4score
 
 ```{r warning=FALSE, message=FALSE}
@@ -135,36 +143,38 @@ tuition_g
 
 `tuition` value also has a contribution to the change in GSCE score. It means that if parents pay for private classes in a subject also taught at school in the last 12 months, the student will have a better grade.
 
+## `homework` vs k4score
+
+```{r warning=FALSE, message=FALSE}
+homework_g<-ggplot(data=data, aes(x=homework,y=ks4score)) +
+  geom_boxplot() +
+  labs(title="Boxplot of Homework vs GCSE Scores",
+         x="Homework",
+         y="GCSE Scores")
+homework_g
+```
+It seems that students who do homework more often tend to have higher GCSE scores.
+
 ## `gender` vs k4score
 
 ```{r}
 ## gender: no clear relationship between gender and ks4score
 ggplot(data, aes(x=gender,y=ks4score, color=gender)) + geom_boxplot() + labs(title = 'Boxplot between Gender and Ks4score')
 ```
-<<<<<<< Updated upstream
 From the boxplot, we can see that there is no clear relationship beteween gender and ks4score, so we will remove the gender variable from our predicition model. 
-=======
-
-From the boxplot, we can see that there is no clear relationship beteween gender and ks4score.
->>>>>>> Stashed changes
 
 ## `singlepar` vs k4score
 
 ```{r}
 ggplot(data, aes(x=singlepar,y=ks4score, color=singlepar)) + geom_boxplot() + labs(title = 'Boxplot between Students with or without Single Parent and Ks4score')
 ```
-
-<<<<<<< Updated upstream
-=======
 Students without single parent have a higher overall ks4score than students with single parent.
 
->>>>>>> Stashed changes
 ## `attitude` vs k4score
 
 ```{r}
 ggplot(data, aes(x=reorder(attitude, ks4score, median),y=ks4score, color=attitude)) + geom_boxplot() + labs(title = 'Boxplot between Attitude and Ks4score')
 ```
-
 Students with very_high attitude tend to have higher median ks4score compared to students with very_low attitude.
 
 ```{r}
@@ -187,12 +197,7 @@ Different percent of students in the school entitled to FSM have varying ks4scor
 ```{r}
 ggplot(data, aes(x=reorder(hiquamum, ks4score, median),y=ks4score, color=hiquamum)) + geom_boxplot() + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
-<<<<<<< Updated upstream
 Students with different level of mothers highest educational qualification have different ks4score, where degree_or_equivalent have the highest median ks4score and no_qualification has the lowest ks4score. 
-=======
-
-Students with different level of mothers highest educational qualification have different ks4score, where degree_or_equivalent has the highest median ks4score and no_qualification has the lowest ks4score.
->>>>>>> Stashed changes
 
 ## `k3` vs k4score
 
@@ -205,33 +210,24 @@ tidydata_k3 <- data_k3 %>%
 tidydata_k3
 ggplot(tidydata_k3, aes(x=k3,y=ks4score, color=k3)) + geom_boxplot()
 ```
-<<<<<<< Updated upstream
 The boxplot of k3en, k3ma, and k3ec shows that there is no clear relationship between ks3 subject scores and ks4scores. Since the three variables are highly correlated with each other, they can be combined together when running the regression model. 
 
 ## `exclude` and `truancy` vs k4score
 
->>>>>>> Stashed changes
-```{r}
-# Simple linear regression model for k3
-k3_lm <- lm(ks4score ~ k3en+k3ma+k3sc, data = data)
-summary(k3_lm)
-```
-By running the regression model for k3 and ks4score, we can see that k3 and ks4score has a positive relationship, where the p-value < 2e-16 confirms that the relationship is statistically significant. The R-squared value of 0.5813 further implies that 58% of the variability in GCSE score can be explained by k3, indicating a strong model fit. However, the wide range of residuals suggests that while the model has predictive power, there are likely other factors not captured by this model that influence ks4score.
-
-## `exclude` vs k4score
+### `exclude` vs k4score
 ```{r}
 ggplot(data, aes(x=exclude,y=ks4score, color=exclude)) + geom_boxplot() + labs(title = 'Boxplot between exclude and Ks4score')
 ```
 
 Students with one ore more exclusions from school age 11-14 has a significantly lower ks4score compared to students without exclusions.
 
-## `truancy` vs k4score
+### `truancy` vs k4score
 ```{r}
 ggplot(data, aes(x=truancy,y=ks4score, color=truancy)) + geom_boxplot() + labs(title = 'Boxplot between truancy and Ks4score')
 ```
 Similar to exclusion, students who is traunt in the last 12 months has a lower ks4score compared to students without truancy. 
 
-## `absent` vs k4score
+### `absent` vs k4score
 ```{r}
 ggplot(data, aes(x=absent,y=ks4score, color=absent)) + geom_boxplot() + labs(title = 'Boxplot between absent and Ks4score')
 ```
@@ -259,7 +255,6 @@ The boxplot for SECshort shows that the median ks4score for managerial is the hi
 ```{r}
 ggplot(data, aes(x=parasp,y=ks4score, fill=pupasp)) + geom_boxplot() + labs(title = 'Boxplot between parasp, pupasp, and Ks4score')
 ```
-<<<<<<< Updated upstream
 The boxplot shows that students who want to continue in FTE after age 16 has a significantly higher ks4score in all three cases (no, yes, missing) for whether parent wishes YP to continue in FTE post 16.
 
 ```{r}
