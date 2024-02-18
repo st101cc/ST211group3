@@ -29,6 +29,7 @@ IDACI_n is the only continuous predictor with missing values
 ```{r}
 #In terms of continuous data, we remove the entire row if there is a missing value
 new.rw.data <- subset(rw.data, !is.na(IDACI_n))
+new.rw.data$homework[new.rw.data$homework == "none"] <- "missing"
 ```
 
 
@@ -36,17 +37,17 @@ new.rw.data <- subset(rw.data, !is.na(IDACI_n))
 
 Firstly I calculate the percentage of missing data among the categorical predictors(x/13448)
 
-hiquamum <- 6.80% of the data ``
+hiquamum <- 6.80% of the data：similar as “no_qualification”, can be removed
 
-homework <- 7.06% ``
+*homework* <- 9.87% need to combine “missing” and “none” together (this two are the same)
 
-attitude <- 7.42% ```
+attitude <- 7.42%: similar as “ver_low”, can be removed
 
-truancy <- 6.23% ``
+truancy <- 6.23%: missing value is similar as yes, you can remove them, check the boxplot
 
-absent <- 11.4% keep the missing value since the number of missing value here is larger than the number of value 'yes'
+*absent* <- 11.4% keep the missing value since the number of missing value here is larger than the number of value 'yes'
 
-exclude <- keep the missing value since the number of missing value here is larger than the number of value 'yes'
+*exclude* <- 10.47% keep the missing value since the number of missing value here is larger than the number of value 'yes'
 
 ##Method1. Remove the missing value
 
@@ -59,7 +60,10 @@ new.rw.data <- subset(new.rw.data, (SECshort != "missing" & #0.18% of the data
                                     computer != "missing" & #1.60% of the data
                                     parasp != "missing" &   #1.60% of the data
                                     singlepar != "missing"& #0.82% of the data
-                                    FSMband != "missing"    #0.13% of the data
+                                    FSMband != "missing"&   #0.13% of the data
+                                    hiquamum != "missing" & #6.80% of the data
+                                    attitude != "missing" & #7.42% of the data
+                                    truancy != "missing"    #6.23% of the data
                                     ))
 ```
 
@@ -116,3 +120,8 @@ ks4score.lm <- lm(ks4score ~ k3ma+attitude, data = new.rw.data)
 display(ks4score.lm)
 ```
 For a fixed value of k3ma, students with missing value in attitude have a lower ks4score than those with very_high attitude but higher than those with high attitude.
+
+```{r}
+write.csv(new.rw.data, file = "RWNS_cleaned.csv")
+```
+
