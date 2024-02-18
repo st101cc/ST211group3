@@ -208,10 +208,6 @@ ggplot(tidydata_k3, aes(x=k3,y=ks4score, color=k3)) + geom_boxplot()
 <<<<<<< Updated upstream
 The boxplot of k3en, k3ma, and k3ec shows that there is no clear relationship between ks3 subject scores and ks4scores. Since the three variables are highly correlated with each other, they can be combined together when running the regression model. 
 
-=======
-
-The boxplot of k3en, k3ma, and k3ec shows that there is no clear relationship between ks3 subject scores and ks4scores.
-
 ## `exclude` and `truancy` vs k4score
 
 >>>>>>> Stashed changes
@@ -272,7 +268,3 @@ pasp_lm <- lm(ks4score ~ parasp*pupasp, data = data)
 summary(pasp_lm)
 ```
 From the model above, we can see that pupaspYes shows a positive relationship with GCSE score, and the model explains around 12 percent of the variation in GCSE score. 
-=======
-
-The boxplot shows that students who want to continue in FTE after age 16 has a significantly higher ks4score in all three cases (no, yes, missing) of whether parent wishes YP to continue in FTE post 16.
->>>>>>> Stashed changes
