@@ -79,7 +79,7 @@ However, it's not reasonable to conclude that the deprivation index is a signifi
 ```{r}
 # Simple linear regression model
 IDACI_lm <- lm(ks4score ~ IDACI_n, data = data)
-display(IDACI_lm)
+summary(IDACI_lm)
 ```
 
 From the summary of the simple linear regression model, we can see that the negative relationship is statistically significant at 5% level. Therefore, we can conclude that the deprivation index is a significant factor that affects the GCSE scores, but it's not the only factor.

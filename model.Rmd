@@ -20,14 +20,6 @@ library(ggplot2)
 data<-read.csv("data/RWNS_cleaned.csv", header=TRUE,stringsAsFactors=TRUE)
 ```
 
-# Data modeling
-
-After looking through the variables, we decided to exclude the following categorical variables from our predictors: "fiveem", "sen", "computer", "gender"
-```{r}
-data<-read.csv("data/RWNS_cleaned.csv", header=TRUE,stringsAsFactors=TRUE)
-```
-
-# The First Regression
 # Convert variables to factors
 ```{r}
 data$sen <- as.factor(data$sen)
@@ -35,12 +27,15 @@ data$computer <- as.factor(data$computer)
 data$gender <- as.factor(data$gender)
 ```
 
-# Build the regression model
+# Build the initial regression model
 ```{r}
 model <- lm(ks4score ~ . - fiveem - sen - computer - gender - k3ma - k3sc - singlepar - tuition - exclude - absent, data = data)
+
+## have a look at the model
+summary(model)
 ```
 
-# Summarize the model
+# Summarize the initial model
 ```{r}
 par(mfrow=c(2,2))
 plot(model, which=c(1,2))
@@ -48,3 +43,68 @@ hist(rstandard(model), freq = FALSE ,
      main="Histogram of standardised residuals",
      cex.main=0.8, xlab="Standardised residuals")
 ```
+
+Our initial diagnostic plot shows that the variance of the residuals may not be constant (possible heteroscedasticity). Furthermore, the normal Q-Q plot and histogram shows that while the residuals are mostly normally distributed, there are some deviations in the tails, which may indicate a potential outlier or extreme value that could impact the regression analysis.
+
+# Second version of the model 
+```{r}
+model.1 <- lm(ks4score ~ . - fiveem - sen - computer - gender - k3ma - k3sc - singlepar - tuition - exclude - absent - fsm - house - IDACI_n, data = data)
+
+## have a look at the model
+summary(model.1)
+```
+
+# Remove outliers
+```{r}
+show_outliers<-function(the.linear.model,topN){
+  #length of data
+  n=length(fitted(the.linear.model))
+  #number of parameters estimated
+  p=length(coef(the.linear.model))
+  #standardised residuals over 3
+  res.out<-which(abs(rstandard(the.linear.model))>3) #sometimes >2
+  #topN values
+  res.top<-head(rev(sort(abs(rstandard(the.linear.model)))),topN)
+  #high leverage values
+  lev.out<-which(lm.influence(the.linear.model)$hat>2*p/n)
+  #topN values
+  lev.top<-head(rev(sort(lm.influence(the.linear.model)$hat)),topN)
+  #high diffits
+  dffits.out<-which(dffits(the.linear.model)>2*sqrt(p/n))
+  #topN values
+  dffits.top<-head(rev(sort(dffits(the.linear.model))),topN)
+  #Cook's over 1
+  cooks.out<-which(cooks.distance(the.linear.model)>1)
+  #topN cooks
+  cooks.top<-head(rev(sort(cooks.distance(the.linear.model))),topN)
+  #Create a list with the statistics -- cant do a data frame as different lengths 
+  list.of.stats<-list(Std.res=res.out,Std.res.top=res.top, Leverage=lev.out, Leverage.top=lev.top, DFFITS=dffits.out, DFFITS.top=dffits.top, Cooks=cooks.out,Cooks.top=cooks.top)
+  #return the statistics
+  list.of.stats}
+```
+
+```{r}
+#Get outliers
+outliers <- show_outliers(model.1, topN = 5) 
+
+# Combine all outlier indices into a single vector
+all_outliers <- unique(c(outliers$Std.res, outliers$Leverage, outliers$DFFITS, outliers$Cooks))
+
+# Remove outliers from the dataset
+cleaned_data <- model.1$model[-all_outliers, ]
+
+# Refit the model without outliers
+clean_model <- lm(ks4score ~ . - fiveem - sen - computer - gender - k3ma - k3sc - singlepar - tuition - exclude - absent - fsm - house - IDACI_n, data = data)
+
+# Summarize the new model
+summary(clean_model)
+```
+# Summarize the final model
+```{r}
+par(mfrow=c(2,2))
+plot(clean_model, which=c(1,2))
+hist(rstandard(model), freq = FALSE ,
+     main="Histogram of standardised residuals",
+     cex.main=0.8, xlab="Standardised residuals")
+```
+
