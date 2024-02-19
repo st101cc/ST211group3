@@ -26,3 +26,25 @@ After looking through the variables, we decided to exclude the following categor
 ```{r}
 data<-read.csv("data/RWNS_cleaned.csv", header=TRUE,stringsAsFactors=TRUE)
 ```
+
+# The First Regression
+# Convert variables to factors
+```{r}
+data$sen <- as.factor(data$sen)
+data$computer <- as.factor(data$computer)
+data$gender <- as.factor(data$gender)
+```
+
+# Build the regression model
+```{r}
+model <- lm(ks4score ~ . - fiveem - sen - computer - gender, data = data)
+```
+
+# Evaluate the model
+```{r}
+par(mfrow=c(2,2))
+plot(model, which=c(1,2))
+hist(rstandard(model), freq = FALSE ,
+     main="Histogram of standardised residuals",
+     cex.main=0.8, xlab="Standardised residuals")
+```
