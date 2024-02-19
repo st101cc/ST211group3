@@ -96,6 +96,13 @@ car::vif(ks4score.lm.1)
 
 Unsurprisingly, `computer` and `tuition` are highly correlated with each other with high VIF values of over 10. Therefore, we decide to keep `tuition` only and exclude `computer` variable.
 
+```{r}
+# Simple linear regression model for tuition
+tuition_lm <- lm(ks4score ~ tuition, data = data)
+summary(tuition_lm)
+```
+However, when running the regression model for tution and ks4score, we can see that tution only explains less than one percent of the variation in GCSE score. Hence, we will exclude this variable from our modeling. 
+
 ## `house` vs k4score
 
 ```{r warning=FALSE, message=FALSE}
@@ -170,6 +177,13 @@ ggplot(data, aes(x=singlepar,y=ks4score, color=singlepar)) + geom_boxplot() + la
 ```
 Students without single parent have a higher overall ks4score than students with single parent.
 
+```{r}
+# Simple linear regression model for singlepar
+singlepar_lm <- lm(ks4score ~ singlepar, data = data)
+summary(singlepar_lm)
+```
+Although the p-value shows that the negative relationship between having a single parent and GCSE score is statistically significant, the R-squared value of 2.8% shows that singlepar explains a small variation in GCSE score, so we will exclude it from our modelling. 
+
 ## `attitude` vs k4score
 
 ```{r}
@@ -212,8 +226,6 @@ ggplot(tidydata_k3, aes(x=k3,y=ks4score, color=k3)) + geom_boxplot()
 ```
 The boxplot of k3en, k3ma, and k3ec shows that there is no clear relationship between ks3 subject scores and ks4scores. Since the three variables are highly correlated with each other, they can be combined together when running the regression model. 
 
-## `exclude` and `truancy` vs k4score
-
 ### `exclude` vs k4score
 ```{r}
 ggplot(data, aes(x=exclude,y=ks4score, color=exclude)) + geom_boxplot() + labs(title = 'Boxplot between exclude and Ks4score')
@@ -240,7 +252,7 @@ Looking at the three boxplots above, we can see that students who are absent, tr
 absent_lm <- lm(ks4score ~ absent+exclude+truancy, data = data)
 summary(absent_lm)
 ```
-The linear model shows that all predictors other than absentYes and excludeNo are statistically significant. However, these behavioral factors (absent, exclude, truancy) explain only 12% variability of the GCSE score. 
+The linear model shows that all predictors other than absentYes and excludeNo are statistically significant. Together, these behavioral factors (absent, exclude, truancy) explain only 12% variability of the GCSE score. Since the truancyYes is the most statistically significant out of all three predictors, we will only keep truancy for our final data modeling. 
 
 ## `SECshort` vs k4score
 
