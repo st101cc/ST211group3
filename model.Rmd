@@ -37,10 +37,10 @@ data$gender <- as.factor(data$gender)
 
 # Build the regression model
 ```{r}
-model <- lm(ks4score ~ . - fiveem - sen - computer - gender, data = data)
+model <- lm(ks4score ~ . - fiveem - sen - computer - gender - k3ma - k3sc - singlepar - tuition - exclude - absent, data = data)
 ```
 
-# Evaluate the model
+# Summarize the model
 ```{r}
 par(mfrow=c(2,2))
 plot(model, which=c(1,2))
